@@ -1,0 +1,101 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function userDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function role() {
+      return userDoc().data.role;
+    }
+
+    function officeId() {
+      return userDoc().data.officeId;
+    }
+
+    // Keep platform operator access (optional)
+    function isSuperAdmin() {
+      return role() == 'super_admin';
+    }
+
+    // New roles
+    function isAdmin() {
+      return role() == 'admin' || role() == 'office_owner'; // legacy compat
+    }
+
+    function isManager() {
+      return role() == 'manager';
+    }
+
+    function isDispatcher() {
+      return role() == 'dispatcher';
+    }
+
+    function isViewer() {
+      return role() == 'viewer';
+    }
+
+    function canWriteOps() {
+      return isSuperAdmin() || isAdmin() || isManager() || isDispatcher();
+    }
+
+    function sameOffice(resourceOfficeId) {
+      return officeId() != null && officeId() == resourceOfficeId;
+    }
+
+    // Users
+    match /users/{uid} {
+      // user can read/update his own profile; super_admin can read all
+      allow read: if isSignedIn() && (request.auth.uid == uid || isSuperAdmin());
+      allow create: if isSignedIn() && request.auth.uid == uid;
+      allow update: if isSignedIn() && request.auth.uid == uid;
+      allow delete: if isSuperAdmin();
+    }
+
+    // Offices (tenant root)
+    match /offices/{officeIdDoc} {
+      allow read: if isSignedIn() && (isSuperAdmin() || officeId() == officeIdDoc);
+      allow create, update, delete: if isSignedIn() && (isSuperAdmin() || isAdmin()) && officeId() == officeIdDoc;
+    }
+
+    // Generic multi-tenant collections
+    function allowReadTenant() {
+      return isSignedIn() && (isSuperAdmin() || isAdmin() || isManager() || isDispatcher() || isViewer()) ;
+    }
+
+    match /orders/{id} {
+      allow read: if allowReadTenant() && (isSuperAdmin() || sameOffice(resource.data.officeId));
+      allow create: if isSignedIn() && canWriteOps() && (request.resource.data.officeId != null && sameOffice(request.resource.data.officeId));
+      allow update, delete: if isSignedIn() && canWriteOps() && (isSuperAdmin() || sameOffice(resource.data.officeId));
+    }
+
+    match /drivers/{id} {
+      allow read: if allowReadTenant() && (isSuperAdmin() || sameOffice(resource.data.officeId));
+      allow create: if isSignedIn() && canWriteOps() && (request.resource.data.officeId != null && sameOffice(request.resource.data.officeId));
+      allow update, delete: if isSignedIn() && canWriteOps() && (isSuperAdmin() || sameOffice(resource.data.officeId));
+    }
+
+    match /calls/{id} {
+      allow read: if allowReadTenant() && (isSuperAdmin() || sameOffice(resource.data.officeId));
+      allow create: if isSignedIn() && canWriteOps() && (request.resource.data.officeId != null && sameOffice(request.resource.data.officeId));
+      allow update, delete: if isSignedIn() && canWriteOps() && (isSuperAdmin() || sameOffice(resource.data.officeId));
+    }
+
+    match /transactions/{id} {
+      allow read: if allowReadTenant() && (isSuperAdmin() || sameOffice(resource.data.officeId));
+      allow create: if isSignedIn() && canWriteOps() && (request.resource.data.officeId != null && sameOffice(request.resource.data.officeId));
+      allow update, delete: if isSignedIn() && canWriteOps() && (isSuperAdmin() || sameOffice(resource.data.officeId));
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,2 @@
+﻿Start-Process -WindowStyle Hidden -FilePath "cmd.exe" -ArgumentList "/c", '"node "D:\مشاريع\_server\server.js" "D:\مشاريع\مواقع ويب\lanovia-brand-site\dist" 8084"'
+Start-Process "http://localhost:8084"

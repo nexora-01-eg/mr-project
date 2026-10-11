@@ -1,0 +1,54 @@
+{
+  "offices": [
+    {
+      "id": "demo-office",
+      "name": "Demo Office",
+      "plan": "pro",
+      "createdAt": "2026-04-11T00:00:00.000Z"
+    }
+  ],
+  "users": [
+    {
+      "id": "<UID_FROM_FIREBASE_AUTH>",
+      "displayName": "Mohamed Sadek",
+      "email": "ms15101102002@gmail.com",
+      "role": "admin",
+      "officeId": "demo-office",
+      "createdAt": "2026-04-11T00:00:00.000Z"
+    }
+  ],
+  "drivers": [
+    {
+      "officeId": "demo-office",
+      "name": "أحمد علي",
+      "phone": "01000000001",
+      "status": "online",
+      "rating": 4.8,
+      "totalOrders": 312,
+      "averageDeliveryTime": 28
+    }
+  ],
+  "orders": [
+    {
+      "officeId": "demo-office",
+      "customerName": "عمرو",
+      "customerPhone": "01111111111",
+      "pickupAddress": "مدينة نصر",
+      "deliveryAddress": "الزمالك",
+      "price": 85,
+      "notes": "اتصال قبل الوصول",
+      "status": "assigned",
+      "driverId": "<DRIVER_DOC_ID_AFTER_SEED>",
+      "createdAt": "2026-04-11T00:00:00.000Z"
+    }
+  ],
+  "calls": [
+    {
+      "officeId": "demo-office",
+      "phone": "01111111111",
+      "name": "عمرو",
+      "lastCallDate": "2026-04-11T00:00:00.000Z",
+      "notes": "طلب عاجل"
+    }
+  ]
+}

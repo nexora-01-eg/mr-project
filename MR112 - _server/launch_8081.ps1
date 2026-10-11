@@ -1,0 +1,2 @@
+﻿Start-Process -WindowStyle Hidden -FilePath "cmd.exe" -ArgumentList "/c", '"node "D:\مشاريع\_server\server.js" "D:\مشاريع\مواقع ويب\elegance-womenswear-website\dist" 8081"'
+Start-Process "http://localhost:8081"
